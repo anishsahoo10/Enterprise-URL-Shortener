@@ -1,0 +1,198 @@
+{
+  "info": {
+    "_postman_id": "c1f74812-4cf4-4b52-9b21-4fa3e498c001",
+    "name": "Enterprise URL Shortener API",
+    "description": "Postman collection covering all endpoints for the Enterprise URL Shortener modular monolith.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/actuator/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["actuator", "health"]
+        }
+      }
+    },
+    {
+      "name": "Create Short URL",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var jsonData = pm.response.json();",
+              "if (jsonData.shortCode) {",
+              "    pm.collectionVariables.set('shortCode', jsonData.shortCode);",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"originalUrl\": \"https://example.com/products/laptops\",\n  \"expiresAt\": \"2026-12-31T23:59:59Z\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/urls",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "urls"]
+        }
+      }
+    },
+    {
+      "name": "Create Invalid URL (Validation 400)",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"originalUrl\": \"javascript:alert(1)\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/urls",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "urls"]
+        }
+      }
+    },
+    {
+      "name": "Redirect Short URL (302)",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Referer",
+            "value": "https://techcrunch.com"
+          },
+          {
+            "key": "User-Agent",
+            "value": "PostmanRuntime/7.36"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/{{shortCode}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["{{shortCode}}"]
+        }
+      }
+    },
+    {
+      "name": "Get URL Details",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/urls/{{shortCode}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "urls", "{{shortCode}}"]
+        }
+      }
+    },
+    {
+      "name": "List URLs (Paginated)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/urls?page=0&size=20",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "urls"],
+          "query": [
+            {
+              "key": "page",
+              "value": "0"
+            },
+            {
+              "key": "size",
+              "value": "20"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Get Click Analytics",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/urls/{{shortCode}}/analytics?page=0&size=20",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "urls", "{{shortCode}}", "analytics"],
+          "query": [
+            {
+              "key": "page",
+              "value": "0"
+            },
+            {
+              "key": "size",
+              "value": "20"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Deactivate Short URL (PATCH)",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"active\": false\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/urls/{{shortCode}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "urls", "{{shortCode}}"]
+        }
+      }
+    },
+    {
+      "name": "Delete Short URL",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/v1/urls/{{shortCode}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "v1", "urls", "{{shortCode}}"]
+        }
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "shortCode",
+      "value": "aB7kP2x"
+    }
+  ]
+}
