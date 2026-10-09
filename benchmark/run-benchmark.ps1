@@ -1,6 +1,6 @@
 param (
     [string]$BaseUrl = "http://localhost:8080",
-    [int]$TotalRequests = 500,
+    [int]$TotalRequests = 200,
     [int]$Concurrency = 10
 )
 
@@ -30,58 +30,94 @@ $created = Invoke-RestMethod -Uri "$BaseUrl/api/v1/urls" -Method Post -Body $cre
 $shortCode = $created.shortCode
 Write-Host "[OK] Created benchmark link with code: $shortCode -> $($created.originalUrl)" -ForegroundColor Green
 
+Add-Type -AssemblyName System.Net.Http
+
 # 3. Warm-up phase
 Write-Host "`nWarming up (20 requests)..." -ForegroundColor Yellow
+$handler = New-Object System.Net.Http.HttpClientHandler
+$handler.AllowAutoRedirect = $false
+$client = New-Object System.Net.Http.HttpClient($handler)
+$client.Timeout = [TimeSpan]::FromSeconds(5)
+
+$targetRedirectUrl = "$BaseUrl/$shortCode"
+
 1..20 | ForEach-Object {
     try {
-        $wr = [System.Net.HttpWebRequest]::Create("$BaseUrl/$shortCode")
-        $wr.AllowAutoRedirect = $false
-        $wr.Method = "GET"
-        $resp = $wr.GetResponse()
-        $resp.Close()
+        $r = $client.GetAsync($targetRedirectUrl).GetAwaiter().GetResult()
+        $r.Dispose()
     } catch {}
 }
 
-# 4. Benchmark execution
+# 4. Benchmark execution using RunspacePool for true multi-threaded concurrency
 Write-Host "Executing benchmark ($TotalRequests requests, hot-link redirect)..." -ForegroundColor Yellow
 
-$latencies = [System.Collections.Generic.List[double]]::new()
-$errors = 0
-$stopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+$RunspacePool = [runspacefactory]::CreateRunspacePool(1, $Concurrency)
+$RunspacePool.Open()
 
-$scriptBlock = {
+$ScriptBlock = {
     param($url)
+    Add-Type -AssemblyName System.Net.Http
+    $handler = New-Object System.Net.Http.HttpClientHandler
+    $handler.AllowAutoRedirect = $false
+    $client = New-Object System.Net.Http.HttpClient($handler)
+    $client.Timeout = [TimeSpan]::FromSeconds(5)
+
     $sw = [System.Diagnostics.Stopwatch]::StartNew()
+    $success = $false
     try {
-        $req = [System.Net.HttpWebRequest]::Create($url)
-        $req.AllowAutoRedirect = $false
-        $req.Method = "GET"
-        $req.Timeout = 5000
-        $response = [System.Net.HttpWebResponse]$req.GetResponse()
-        $sw.Stop()
-        $status = [int]$response.StatusCode
-        $response.Close()
-        return @{ Success = ($status -eq 302); Latency = $sw.Elapsed.TotalMilliseconds }
+        $resp = $client.GetAsync($url).GetAwaiter().GetResult()
+        $status = [int]$resp.StatusCode
+        $resp.Dispose()
+        if ($status -eq 302) { $success = $true }
     } catch {
+    } finally {
         $sw.Stop()
-        return @{ Success = $false; Latency = $sw.Elapsed.TotalMilliseconds }
+        $client.Dispose()
+        $handler.Dispose()
+    }
+
+    [PSCustomObject]@{
+        Success = $success
+        Latency = $sw.Elapsed.TotalMilliseconds
     }
 }
 
-$targetRedirectUrl = "$BaseUrl/$shortCode"
-$results = 1..$TotalRequests | ForEach-Object -Parallel $scriptBlock -ArgumentList $targetRedirectUrl -ThrottleLimit $Concurrency
+$tasks = [System.Collections.Generic.List[System.Management.Automation.PowerShell]]::new()
+$asyncResults = [System.Collections.Generic.List[System.IAsyncResult]]::new()
 
-$stopwatch.Stop()
-$totalElapsedSec = $stopwatch.Elapsed.TotalSeconds
+$benchmarkTimer = [System.Diagnostics.Stopwatch]::StartNew()
 
-foreach ($res in $results) {
-    if ($res.Success) {
-        $latencies.Add($res.Latency)
+for ($i = 0; $i -lt $TotalRequests; $i++) {
+    $ps = [powershell]::Create()
+    $ps.RunspacePool = $RunspacePool
+    [void]$ps.AddScript($ScriptBlock).AddArgument($targetRedirectUrl)
+    $tasks.Add($ps)
+    $asyncResults.Add($ps.BeginInvoke())
+}
+
+$latencies = [System.Collections.Generic.List[double]]::new()
+$errors = 0
+
+for ($i = 0; $i -lt $TotalRequests; $i++) {
+    $ps = $tasks[$i]
+    $ar = $asyncResults[$i]
+    $output = $ps.EndInvoke($ar)
+    $ps.Dispose()
+
+    if ($output.Success) {
+        $latencies.Add($output.Latency)
     } else {
         $errors++
     }
 }
 
+$benchmarkTimer.Stop()
+$RunspacePool.Close()
+$RunspacePool.Dispose()
+$client.Dispose()
+$handler.Dispose()
+
+$totalElapsedSec = $benchmarkTimer.Elapsed.TotalSeconds
 $sorted = $latencies | Sort-Object
 $count = $sorted.Count
 

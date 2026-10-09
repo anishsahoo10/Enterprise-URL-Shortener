@@ -61,11 +61,11 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- In-memory H2 Database (used for testing and optional standalone profile) -->
+        <!-- H2 Database (used for testing and standalone dev profile without external postgres) -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <scope>test</scope>
+            <scope>runtime</scope>
         </dependency>
 
         <!-- Spring Boot Starter Test -->

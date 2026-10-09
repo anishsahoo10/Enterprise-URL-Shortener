@@ -1,0 +1,35 @@
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://${DB_HOST:postgres}:${DB_PORT:5432}/${DB_NAME:urlshortener}}
+    username: ${DB_USERNAME:urlapp}
+    password: ${DB_PASSWORD:urlpass}
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 300000
+      connection-timeout: 20000
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  data:
+    redis:
+      host: ${REDIS_HOST:redis}
+      port: ${REDIS_PORT:6379}
+      timeout: 2000ms
+      connect-timeout: 2000ms
+
+app:
+  cache:
+    enabled: ${APP_CACHE_ENABLED:true}
+    ttl-seconds: ${URL_CACHE_TTL_SECONDS:1800}
+
+management:
+  health:
+    redis:
+      enabled: true

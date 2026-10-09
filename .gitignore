@@ -30,9 +30,11 @@ out/
 ### VS Code ###
 .vscode/
 
-### Environment & Secrets ###
+### Environment & Secrets & Local Data ###
 .env
 *.env.local
+data/
+*.db
 
 ### OS Files ###
 Thumbs.db
