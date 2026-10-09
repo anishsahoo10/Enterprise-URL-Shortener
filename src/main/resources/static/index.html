@@ -3,772 +3,877 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Enterprise URL Shortener</title>
+    <title>Shorten.io — Enterprise URL Shortener</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-base: #0f172a;
-            --bg-surface: #1e293b;
-            --bg-surface-hover: #334155;
-            --bg-elevated: #1e293b;
+            --bg: #07090e;
+            --card-bg: rgba(18, 23, 37, 0.7);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --card-border-hover: rgba(99, 102, 241, 0.35);
+            --input-bg: rgba(11, 15, 25, 0.85);
             --primary: #6366f1;
-            --primary-hover: #4f46e5;
-            --primary-glow: rgba(99, 102, 241, 0.25);
-            --accent: #06b6d4;
-            --text-main: #f8fafc;
+            --primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #d946ef 100%);
+            --primary-glow: rgba(139, 92, 246, 0.35);
+            --accent: #38bdf8;
+            --text: #f8fafc;
             --text-muted: #94a3b8;
-            --border: #334155;
-            --border-focus: #6366f1;
+            --text-subtle: #64748b;
             --success: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
+            --danger: #f43f5e;
+            --radius-xl: 24px;
             --radius-lg: 16px;
-            --radius-md: 10px;
-            --radius-sm: 6px;
-            --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            --radius-md: 12px;
+            --radius-sm: 8px;
+            --font: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
         }
 
         * {
-            box-sizing: border-box;
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
         }
 
         body {
             font-family: var(--font);
-            background-color: var(--bg-base);
-            color: var(--text-main);
+            background-color: var(--bg);
+            color: var(--text);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
-            line-height: 1.5;
+            overflow-x: hidden;
             background-image: 
-                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
-                radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.1) 0px, transparent 50%);
+                radial-gradient(circle at 50% -10%, rgba(99, 102, 241, 0.22) 0%, transparent 55%),
+                radial-gradient(circle at 90% 40%, rgba(217, 70, 239, 0.12) 0%, transparent 45%),
+                radial-gradient(circle at 10% 80%, rgba(56, 189, 248, 0.1) 0%, transparent 50%);
+            background-attachment: fixed;
+            -webkit-font-smoothing: antialiased;
         }
 
+        /* Top Navigation - Dribbble/Figma Floating Pill */
         header {
-            border-bottom: 1px solid var(--border);
-            backdrop-filter: blur(12px);
-            background: rgba(15, 23, 42, 0.75);
-            position: sticky;
-            top: 0;
-            z-index: 40;
+            padding: 1.5rem 1.5rem 0;
+            display: flex;
+            justify-content: center;
+            width: 100%;
         }
 
-        .nav-container {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 1rem 1.5rem;
+        .navbar {
+            max-width: 960px;
+            width: 100%;
+            background: rgba(18, 24, 38, 0.6);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            border-radius: 9999px;
+            padding: 0.75rem 1.5rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
         }
 
         .brand {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--text-main);
+            gap: 0.65rem;
             text-decoration: none;
+            color: var(--text);
+            font-weight: 800;
+            font-size: 1.15rem;
+            letter-spacing: -0.02em;
         }
 
-        .brand-icon {
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
-            border-radius: var(--radius-sm);
+        .brand-logo {
+            width: 32px;
+            height: 32px;
+            border-radius: 9px;
+            background: var(--primary-gradient);
             display: flex;
             align-items: center;
             justify-content: center;
             box-shadow: 0 4px 12px var(--primary-glow);
         }
 
-        .status-badge {
+        .nav-status {
             display: inline-flex;
             align-items: center;
-            gap: 0.4rem;
-            font-size: 0.8rem;
-            padding: 0.35rem 0.75rem;
-            border-radius: 9999px;
-            background: rgba(16, 185, 129, 0.15);
+            gap: 0.45rem;
+            font-size: 0.78rem;
+            font-weight: 600;
             color: #34d399;
-            border: 1px solid rgba(16, 185, 129, 0.25);
-            font-weight: 500;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            padding: 0.35rem 0.85rem;
+            border-radius: 9999px;
         }
 
-        .status-dot {
-            width: 7px;
-            height: 7px;
-            background: #10b981;
+        .status-pulse {
+            width: 6px;
+            height: 6px;
+            background: var(--success);
             border-radius: 50%;
-            box-shadow: 0 0 8px #10b981;
+            box-shadow: 0 0 10px var(--success);
+            animation: pulse 2s infinite;
         }
 
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+        }
+
+        /* Hero Section */
         main {
             flex: 1;
-            max-width: 1100px;
-            margin: 0 auto;
+            max-width: 960px;
             width: 100%;
-            padding: 2.5rem 1.5rem;
+            margin: 0 auto;
+            padding: 3.5rem 1.5rem 4rem;
             display: flex;
             flex-direction: column;
-            gap: 2.5rem;
+            align-items: center;
+            gap: 2.75rem;
         }
 
-        /* Hero & Shorten Form */
-        .hero {
+        .hero-banner {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.25);
+            padding: 0.4rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #a5b4fc;
+            margin-bottom: 1.25rem;
+        }
+
+        .hero-headline {
             text-align: center;
-            margin-bottom: 0.5rem;
+            max-width: 760px;
         }
 
-        .hero h1 {
-            font-size: 2.5rem;
+        .hero-headline h1 {
+            font-size: clamp(2.4rem, 5.5vw, 3.8rem);
             font-weight: 800;
-            letter-spacing: -0.025em;
-            margin-bottom: 0.75rem;
-            background: linear-gradient(to right, #f8fafc, #94a3b8);
+            line-height: 1.12;
+            letter-spacing: -0.035em;
+            margin-bottom: 1rem;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #a5b4fc 0%, #c084fc 50%, #f472b6 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        .hero p {
+        .hero-headline p {
             color: var(--text-muted);
-            font-size: 1.1rem;
-            max-width: 600px;
+            font-size: clamp(1rem, 2vw, 1.15rem);
+            line-height: 1.6;
+            max-width: 580px;
             margin: 0 auto;
         }
 
-        .shorten-card {
-            background: var(--bg-surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            padding: 2rem;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+        /* Card Container with Tabs */
+        .workspace-card {
+            width: 100%;
+            max-width: 720px;
+            background: var(--card-bg);
+            backdrop-filter: blur(24px);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-xl);
+            padding: 2.25rem;
+            box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(255, 255, 255, 0.04);
             position: relative;
-            overflow: hidden;
         }
 
-        .shorten-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 2px;
-            background: linear-gradient(to right, var(--primary), var(--accent));
-        }
-
-        .form-group {
+        /* Modern Tabs (Figma/Wix Style) */
+        .tab-switcher {
             display: flex;
-            flex-direction: column;
-            gap: 1rem;
+            background: rgba(11, 15, 25, 0.6);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-md);
+            padding: 0.3rem;
+            margin-bottom: 1.75rem;
+            width: fit-content;
         }
 
-        .input-row {
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-family: var(--font);
+            font-size: 0.88rem;
+            font-weight: 600;
+            padding: 0.55rem 1.25rem;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+        }
+
+        .tab-btn.active {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.25s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Input Controls */
+        .input-group {
             display: flex;
             gap: 0.75rem;
             flex-wrap: wrap;
         }
 
-        .input-wrapper {
+        .input-field-wrapper {
             flex: 1;
-            min-width: 280px;
+            min-width: 260px;
             position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 1.1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-subtle);
+            pointer-events: none;
         }
 
         input[type="text"], input[type="datetime-local"] {
             width: 100%;
-            background: var(--bg-base);
-            border: 1px solid var(--border);
+            background: var(--input-bg);
+            border: 1px solid var(--card-border);
             border-radius: var(--radius-md);
-            padding: 0.9rem 1.2rem;
-            color: var(--text-main);
-            font-size: 1rem;
+            padding: 1rem 1rem 1rem 3rem;
+            color: var(--text);
+            font-family: var(--font);
+            font-size: 0.98rem;
             transition: all 0.2s ease;
         }
 
-        input[type="text"]:focus, input[type="datetime-local"]:focus {
-            outline: none;
-            border-color: var(--border-focus);
-            box-shadow: 0 0 0 3px var(--primary-glow);
+        input[type="datetime-local"] {
+            padding: 0.9rem 1.1rem;
         }
 
-        .btn {
-            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
-            color: #fff;
+        input:focus {
+            outline: none;
+            border-color: rgba(139, 92, 246, 0.6);
+            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+            background: rgba(15, 21, 35, 0.95);
+        }
+
+        input::placeholder {
+            color: var(--text-subtle);
+        }
+
+        .btn-submit {
+            background: var(--primary-gradient);
+            color: #ffffff;
             border: none;
             border-radius: var(--radius-md);
-            padding: 0.9rem 1.75rem;
-            font-size: 1rem;
-            font-weight: 600;
+            padding: 1rem 1.75rem;
+            font-family: var(--font);
+            font-size: 0.98rem;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
             display: inline-flex;
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
-            box-shadow: 0 4px 14px var(--primary-glow);
+            box-shadow: 0 4px 16px var(--primary-glow);
+            white-space: nowrap;
         }
 
-        .btn:hover {
-            opacity: 0.95;
+        .btn-submit:hover {
+            opacity: 0.94;
             transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.45);
         }
 
-        .btn:active {
+        .btn-submit:active {
             transform: translateY(0);
         }
 
-        .btn-secondary {
-            background: var(--bg-surface-hover);
-            color: var(--text-main);
-            box-shadow: none;
-            border: 1px solid var(--border);
-        }
-
-        .btn-secondary:hover {
-            background: #475569;
-        }
-
-        .btn-danger {
-            background: rgba(239, 68, 68, 0.15);
-            color: #f87171;
-            border: 1px solid rgba(239, 68, 68, 0.25);
-            box-shadow: none;
-        }
-
-        .btn-danger:hover {
-            background: rgba(239, 68, 68, 0.25);
-        }
-
-        .advanced-toggle {
-            align-self: flex-start;
+        /* Collapsible Expiry Option */
+        .option-toggle {
+            margin-top: 1rem;
             background: none;
             border: none;
             color: var(--text-muted);
-            font-size: 0.9rem;
+            font-family: var(--font);
+            font-size: 0.85rem;
             cursor: pointer;
-            display: flex;
+            display: inline-flex;
             align-items: center;
             gap: 0.35rem;
-            padding: 0;
-            transition: color 0.2s;
+            transition: color 0.15s;
         }
 
-        .advanced-toggle:hover {
-            color: var(--text-main);
+        .option-toggle:hover {
+            color: var(--text);
         }
 
-        .advanced-fields {
+        .collapsible-box {
             display: none;
-            gap: 1rem;
-            margin-top: 0.5rem;
+            margin-top: 0.85rem;
             padding-top: 1rem;
-            border-top: 1px dashed var(--border);
+            border-top: 1px dashed var(--card-border);
         }
 
-        .advanced-fields.open {
-            display: flex;
-            flex-wrap: wrap;
-        }
-
-        .field-label {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-bottom: 0.35rem;
+        .collapsible-box.open {
             display: block;
         }
 
-        /* Result Card */
-        .result-box {
-            display: none;
-            margin-top: 1.5rem;
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid rgba(99, 102, 241, 0.3);
-            border-radius: var(--radius-md);
-            padding: 1.25rem 1.5rem;
-            align-items: center;
-            justify-content: space-between;
-            gap: 1rem;
-            flex-wrap: wrap;
-            animation: fadeIn 0.3s ease;
+        .input-label {
+            display: block;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            margin-bottom: 0.4rem;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(6px); }
+        /* Result Display Card */
+        .result-card {
+            display: none;
+            margin-top: 1.75rem;
+            background: rgba(11, 15, 25, 0.8);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: var(--radius-lg);
+            padding: 1.35rem;
+            animation: slideDown 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-8px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .result-info {
+        .result-header {
             display: flex;
-            flex-direction: column;
-            gap: 0.25rem;
-            min-width: 250px;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.85rem;
         }
 
-        .result-label {
-            font-size: 0.8rem;
-            color: #38bdf8;
-            font-weight: 600;
+        .badge-success {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #34d399;
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
 
-        .result-link {
-            font-size: 1.2rem;
-            font-weight: 700;
-            color: #f8fafc;
+        .result-url-display {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-md);
+            padding: 0.85rem 1.1rem;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .url-text {
+            font-family: var(--font-mono);
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #a5b4fc;
             text-decoration: none;
             word-break: break-all;
         }
 
-        .result-link:hover {
+        .url-text:hover {
+            color: #c7d2fe;
             text-decoration: underline;
         }
 
-        .result-actions {
+        .btn-action-group {
             display: flex;
             gap: 0.5rem;
         }
 
-        /* Dashboard Table */
-        .dashboard-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 1rem;
-        }
-
-        .dashboard-title {
-            font-size: 1.4rem;
-            font-weight: 700;
-        }
-
-        .table-card {
-            background: var(--bg-surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            overflow: hidden;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        .table-responsive {
-            overflow-x: auto;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            text-align: left;
-            font-size: 0.95rem;
-        }
-
-        th {
-            background: rgba(15, 23, 42, 0.5);
-            padding: 1rem 1.25rem;
-            color: var(--text-muted);
+        .btn-action {
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid var(--card-border);
+            color: var(--text);
+            font-family: var(--font);
+            font-size: 0.85rem;
             font-weight: 600;
-            border-bottom: 1px solid var(--border);
-            white-space: nowrap;
-        }
-
-        td {
-            padding: 1rem 1.25rem;
-            border-bottom: 1px solid var(--border);
-            vertical-align: middle;
-        }
-
-        tr:last-child td {
-            border-bottom: none;
-        }
-
-        tr:hover td {
-            background: rgba(255, 255, 255, 0.02);
-        }
-
-        .shortcode-badge {
-            font-family: monospace;
-            background: rgba(99, 102, 241, 0.15);
-            color: #a5b4fc;
-            padding: 0.25rem 0.5rem;
+            padding: 0.55rem 0.95rem;
             border-radius: var(--radius-sm);
-            font-weight: 700;
-            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            text-decoration: none;
         }
 
-        .dest-url {
-            max-width: 320px;
+        .btn-action:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: rgba(255, 255, 255, 0.18);
+        }
+
+        .original-meta {
+            margin-top: 0.75rem;
+            font-size: 0.82rem;
+            color: var(--text-subtle);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            color: var(--text-muted);
         }
 
-        .badge-active {
-            display: inline-block;
-            font-size: 0.75rem;
-            font-weight: 600;
-            padding: 0.2rem 0.6rem;
-            border-radius: 9999px;
-            background: rgba(16, 185, 129, 0.15);
-            color: #34d399;
-        }
-
-        .badge-inactive {
-            display: inline-block;
-            font-size: 0.75rem;
-            font-weight: 600;
-            padding: 0.2rem 0.6rem;
-            border-radius: 9999px;
-            background: rgba(239, 68, 68, 0.15);
-            color: #f87171;
-        }
-
-        .action-btns {
-            display: flex;
-            gap: 0.4rem;
-        }
-
-        .icon-btn {
-            background: transparent;
-            border: 1px solid var(--border);
-            border-radius: var(--radius-sm);
-            color: var(--text-muted);
-            padding: 0.4rem 0.6rem;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .icon-btn:hover {
-            color: var(--text-main);
-            border-color: var(--text-muted);
-            background: var(--bg-surface-hover);
-        }
-
-        /* Modal */
-        .modal-overlay {
+        /* Analytics View Container */
+        .analytics-display {
             display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.75);
-            backdrop-filter: blur(4px);
-            z-index: 50;
-            align-items: center;
-            justify-content: center;
-            padding: 1rem;
+            margin-top: 1.5rem;
+            animation: fadeIn 0.3s ease;
         }
 
-        .modal-overlay.open {
-            display: flex;
-        }
-
-        .modal {
-            background: var(--bg-surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-lg);
-            width: 100%;
-            max-width: 650px;
-            max-height: 90vh;
-            overflow-y: auto;
-            padding: 2rem;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-            position: relative;
-        }
-
-        .modal-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 1.5rem;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            font-size: 1.5rem;
-            cursor: pointer;
-            line-height: 1;
-        }
-
-        .analytics-grid {
+        .analytics-stat-row {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
             gap: 1rem;
             margin-bottom: 1.5rem;
         }
 
-        .stat-card {
-            background: var(--bg-base);
-            border: 1px solid var(--border);
+        .stat-box {
+            background: rgba(11, 15, 25, 0.75);
+            border: 1px solid var(--card-border);
             border-radius: var(--radius-md);
-            padding: 1rem;
-            text-align: center;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
         }
 
-        .stat-val {
-            font-size: 1.8rem;
+        .stat-number {
+            font-size: 2.2rem;
             font-weight: 800;
-            color: var(--primary);
+            letter-spacing: -0.03em;
+            color: #c084fc;
         }
 
-        .stat-label {
+        .stat-caption {
             font-size: 0.8rem;
             color: var(--text-muted);
+            font-weight: 500;
         }
 
-        /* Toast */
-        .toast-container {
+        .events-panel {
+            background: rgba(11, 15, 25, 0.75);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-md);
+            padding: 1.25rem;
+        }
+
+        .events-title {
+            font-size: 0.92rem;
+            font-weight: 700;
+            margin-bottom: 0.85rem;
+            color: var(--text);
+        }
+
+        .events-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        .event-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.65rem 0.85rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: var(--radius-sm);
+            font-size: 0.82rem;
+        }
+
+        .event-time {
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+        }
+
+        .event-referrer {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* Dribbble Style Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.25rem;
+            width: 100%;
+            max-width: 960px;
+            margin-top: 1rem;
+        }
+
+        .feature-card {
+            background: rgba(18, 23, 37, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            transition: all 0.25s ease;
+        }
+
+        .feature-card:hover {
+            border-color: var(--card-border-hover);
+            transform: translateY(-2px);
+        }
+
+        .feature-icon-wrapper {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-sm);
+            background: rgba(99, 102, 241, 0.12);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 1rem;
+            color: #a5b4fc;
+        }
+
+        .feature-card h3 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 0.4rem;
+            color: var(--text);
+        }
+
+        .feature-card p {
+            font-size: 0.88rem;
+            color: var(--text-muted);
+            line-height: 1.55;
+        }
+
+        /* Toast Feedback */
+        .toast-shelf {
             position: fixed;
-            bottom: 1.5rem;
-            right: 1.5rem;
+            bottom: 2rem;
+            right: 2rem;
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
             z-index: 100;
         }
 
-        .toast {
-            background: var(--bg-surface);
-            border: 1px solid var(--border);
-            color: var(--text-main);
+        .toast-bubble {
+            background: rgba(18, 24, 38, 0.95);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--card-border);
+            color: var(--text);
             padding: 0.85rem 1.25rem;
             border-radius: var(--radius-md);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+            font-size: 0.88rem;
+            font-weight: 600;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            font-size: 0.9rem;
-            animation: slideUp 0.2s ease;
+            gap: 0.6rem;
+            animation: toastIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .toast-success { border-left: 4px solid var(--success); }
-        .toast-error { border-left: 4px solid var(--danger); }
+        .toast-bubble.toast-success { border-left: 3px solid var(--success); }
+        .toast-bubble.toast-error { border-left: 3px solid var(--danger); }
 
-        @keyframes slideUp {
-            from { transform: translateY(12px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+        @keyframes toastIn {
+            from { transform: translateY(12px) scale(0.96); opacity: 0; }
+            to { transform: translateY(0) scale(1); opacity: 1; }
         }
 
         footer {
-            border-top: 1px solid var(--border);
-            padding: 1.5rem;
             text-align: center;
-            color: var(--text-muted);
-            font-size: 0.85rem;
+            padding: 2.5rem 1.5rem;
+            color: var(--text-subtle);
+            font-size: 0.82rem;
+            border-top: 1px solid var(--card-border);
         }
     </style>
 </head>
 <body>
 
+    <!-- Header Navigation Bar -->
     <header>
-        <div class="nav-container">
+        <nav class="navbar">
             <a href="/" class="brand">
-                <div class="brand-icon">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <div class="brand-logo">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
                         <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
                     </svg>
                 </div>
-                <span>LinkCraft</span>
+                <span>Shorten.io</span>
             </a>
-            <div class="status-badge" id="systemStatusBadge">
-                <div class="status-dot"></div>
-                <span id="systemStatusText">API Online</span>
+            <div class="nav-status">
+                <span class="status-pulse"></span>
+                <span id="navHealthStatus">API Operational</span>
             </div>
-        </div>
+        </nav>
     </header>
 
     <main>
-        <section class="hero">
-            <h1>Shorten Links. Accelerate Redirects.</h1>
-            <p>Enterprise URL Shortener with PostgreSQL durability, Redis cache-aside, and real-time click analytics.</p>
-        </section>
-
-        <!-- Shorten Input Card -->
-        <section class="shorten-card">
-            <form id="shortenForm" class="form-group" onsubmit="handleShorten(event)">
-                <div class="input-row">
-                    <div class="input-wrapper">
-                        <input type="text" id="longUrlInput" placeholder="Paste your destination link (https://...)" required autocomplete="off">
-                    </div>
-                    <button type="submit" class="btn" id="submitBtn">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="13 17 18 12 13 7"></polyline>
-                            <polyline points="6 17 11 12 6 7"></polyline>
-                        </svg>
-                        <span>Shorten Link</span>
-                    </button>
-                </div>
-
-                <button type="button" class="advanced-toggle" onclick="toggleAdvanced()">
-                    <span id="advancedArrow">▸</span>
-                    <span>Advanced Options (Expiration date)</span>
-                </button>
-
-                <div class="advanced-fields" id="advancedFields">
-                    <div style="flex: 1; min-width: 240px;">
-                        <label class="field-label" for="expiryInput">Expiration Timestamp (Optional)</label>
-                        <input type="datetime-local" id="expiryInput">
-                    </div>
-                </div>
-            </form>
-
-            <!-- Result Box -->
-            <div class="result-box" id="resultBox">
-                <div class="result-info">
-                    <span class="result-label">Your shortened link is ready</span>
-                    <a href="#" target="_blank" class="result-link" id="resultShortUrl">http://localhost:8080/example</a>
-                    <span style="font-size: 0.85rem; color: var(--text-muted);" id="resultOriginalUrl">Destination: https://...</span>
-                </div>
-                <div class="result-actions">
-                    <button class="btn btn-secondary" onclick="copyResultLink()">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                        </svg>
-                        <span id="copyBtnText">Copy</span>
-                    </button>
-                    <a href="#" target="_blank" class="btn" id="openLinkBtn">Visit Link</a>
-                </div>
+        <!-- Hero Copy -->
+        <section class="hero-headline">
+            <div class="hero-banner">
+                <span>⚡ Enterprise Monolith Architecture</span>
             </div>
+            <h1>Make every link <span class="gradient-text">faster & trackable.</span></h1>
+            <p>Transform lengthy URLs into high-performance short links powered by PostgreSQL persistence and sub-millisecond Redis caching.</p>
         </section>
 
-        <!-- Managed Links Table -->
-        <section>
-            <div class="dashboard-header">
-                <h2 class="dashboard-title">Active Links</h2>
-                <button class="btn btn-secondary" onclick="loadUrls()" style="padding: 0.5rem 1rem; font-size: 0.85rem;">
-                    ↻ Refresh
+        <!-- Main Workspace Card (Dribbble/Figma Card Style) -->
+        <div class="workspace-card">
+            <!-- Tabs Switcher -->
+            <div class="tab-switcher">
+                <button type="button" class="tab-btn active" id="tabShortenBtn" onclick="switchTab('shorten')">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    <span>Shorten URL</span>
+                </button>
+                <button type="button" class="tab-btn" id="tabAnalyticsBtn" onclick="switchTab('analytics')">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="20" x2="18" y2="10"></line>
+                        <line x1="12" y1="20" x2="12" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="14"></line>
+                    </svg>
+                    <span>Track Analytics</span>
                 </button>
             </div>
 
-            <div class="table-card">
-                <div class="table-responsive">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Short Code</th>
-                                <th>Original Destination</th>
-                                <th>Clicks</th>
-                                <th>Status</th>
-                                <th>Created</th>
-                                <th style="text-align: right;">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="urlsTableBody">
-                            <tr>
-                                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading links...</td>
-                            </tr>
-                        </tbody>
-                    </table>
+            <!-- TAB 1: Shorten URL -->
+            <div class="tab-content active" id="tabShorten">
+                <form id="urlShortenForm" onsubmit="createShortLink(event)">
+                    <div class="input-group">
+                        <div class="input-field-wrapper">
+                            <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                                <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                            </svg>
+                            <input type="text" id="targetUrlInput" placeholder="Paste your link (https://...)" required autocomplete="off">
+                        </div>
+                        <button type="submit" class="btn-submit" id="submitShortenBtn">
+                            <span>Shorten URL</span>
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                <polyline points="12 5 19 12 12 19"></polyline>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <button type="button" class="option-toggle" onclick="toggleExpiryOption()">
+                        <span id="expiryChevron">▸</span>
+                        <span>Expiration date (optional)</span>
+                    </button>
+
+                    <div class="collapsible-box" id="expiryCollapse">
+                        <label class="input-label" for="expiryField">Set expiry timestamp (UTC)</label>
+                        <input type="datetime-local" id="expiryField">
+                    </div>
+                </form>
+
+                <!-- Generated Result Card -->
+                <div class="result-card" id="shortenResultCard">
+                    <div class="result-header">
+                        <span class="badge-success">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                            Link Ready
+                        </span>
+                        <span style="font-size: 0.8rem; color: var(--text-subtle);" id="resultCodeBadge">Code: —</span>
+                    </div>
+
+                    <div class="result-url-display">
+                        <a href="#" target="_blank" class="url-text" id="resultShortUrlLink">http://localhost:8080/...</a>
+                        <div class="btn-action-group">
+                            <button type="button" class="btn-action" onclick="copyCurrentShortUrl()">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                                </svg>
+                                <span id="copyBtnLabel">Copy</span>
+                            </button>
+                            <a href="#" target="_blank" class="btn-action" id="visitDirectBtn">
+                                <span>Visit</span>
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                                    <polyline points="15 3 21 3 21 9"></polyline>
+                                    <line x1="10" y1="14" x2="21" y2="3"></line>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="original-meta" id="resultOriginalMeta">Destination: —</div>
                 </div>
+            </div>
+
+            <!-- TAB 2: Track Analytics -->
+            <div class="tab-content" id="tabAnalytics">
+                <form id="analyticsSearchForm" onsubmit="inspectAnalytics(event)">
+                    <div class="input-group">
+                        <div class="input-field-wrapper">
+                            <svg class="input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <circle cx="11" cy="11" r="8"></circle>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                            </svg>
+                            <input type="text" id="shortCodeSearchInput" placeholder="Enter short code (e.g. hQ7s5EC)" required autocomplete="off">
+                        </div>
+                        <button type="submit" class="btn-submit" id="submitSearchBtn">
+                            <span>Inspect Stats</span>
+                        </button>
+                    </div>
+                </form>
+
+                <div class="analytics-display" id="analyticsDisplayPanel">
+                    <div class="analytics-stat-row">
+                        <div class="stat-box">
+                            <span class="stat-number" id="statTotalClicks">0</span>
+                            <span class="stat-caption">Total Successful Clicks</span>
+                        </div>
+                        <div class="stat-box">
+                            <span class="stat-number" style="font-size: 1.5rem; color: #34d399;" id="statCodeLabel">—</span>
+                            <span class="stat-caption" id="statStatusLabel">Status: Active</span>
+                        </div>
+                    </div>
+
+                    <div class="events-panel">
+                        <h4 class="events-title">Click Telemetry</h4>
+                        <ul class="events-list" id="eventsListItems">
+                            <li class="event-item" style="color: var(--text-subtle);">No clicks recorded yet.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Minimalist Features Showcase (Dribbble/Wix Style) -->
+        <section class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon-wrapper">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                    </svg>
+                </div>
+                <h3>Sub-Millisecond Redis</h3>
+                <p>Hot URLs resolve via Redis cache-aside in ~2ms with automatic fallback to PostgreSQL.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon-wrapper">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    </svg>
+                </div>
+                <h3>Atomic Concurrency</h3>
+                <p>Zero lost click updates under heavy redirect spikes using database-level atomic increments.</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-icon-wrapper">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                </div>
+                <h3>Strict Lifecycle Policy</h3>
+                <p>Expired or deactivated links instantly return HTTP 410 Gone, even on cache hits.</p>
             </div>
         </section>
     </main>
 
-    <!-- Analytics Modal -->
-    <div class="modal-overlay" id="analyticsModal" onclick="closeModalOnBackdrop(event)">
-        <div class="modal">
-            <div class="modal-header">
-                <div>
-                    <h3 style="font-size: 1.25rem; font-weight: 700;" id="modalShortCode">Analytics</h3>
-                    <p style="font-size: 0.85rem; color: var(--text-muted);" id="modalDestination">https://...</p>
-                </div>
-                <button class="modal-close" onclick="closeAnalyticsModal()">&times;</button>
-            </div>
-
-            <div class="analytics-grid">
-                <div class="stat-card">
-                    <div class="stat-val" id="modalTotalClicks">0</div>
-                    <div class="stat-label">Total Clicks</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-val" style="font-size: 1.2rem; color: #38bdf8;" id="modalStatus">Active</div>
-                    <div class="stat-label">Link Status</div>
-                </div>
-            </div>
-
-            <h4 style="font-size: 1rem; margin-bottom: 0.75rem; color: var(--text-main);">Recent Click Events</h4>
-            <div class="table-card" style="border-radius: var(--radius-md);">
-                <table style="font-size: 0.85rem;">
-                    <thead>
-                        <tr>
-                            <th>Clicked At (UTC)</th>
-                            <th>Referrer</th>
-                        </tr>
-                    </thead>
-                    <tbody id="modalEventsBody">
-                        <tr>
-                            <td colspan="2" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No click events recorded yet.</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-
-    <!-- Toast Container -->
-    <div class="toast-container" id="toastContainer"></div>
+    <!-- Toast Notification Container -->
+    <div class="toast-shelf" id="toastShelf"></div>
 
     <footer>
-        Enterprise URL Shortener &bull; Built with Java 21 &bull; Spring Boot 3.3 &bull; PostgreSQL &bull; Redis Cache-Aside
+        Enterprise URL Shortener &bull; Java 21 &bull; Spring Boot 3.3 &bull; PostgreSQL &bull; Redis
     </footer>
 
     <script>
-        const API_BASE = '/api/v1/urls';
-        let currentResultUrl = '';
+        let currentShortUrl = '';
 
         document.addEventListener('DOMContentLoaded', () => {
-            checkHealth();
-            loadUrls();
+            fetchHealth();
         });
 
-        async function checkHealth() {
+        async function fetchHealth() {
             try {
                 const res = await fetch('/actuator/health');
                 const data = await res.json();
                 if (data.status === 'UP') {
-                    document.getElementById('systemStatusText').innerText = 'API Online';
+                    document.getElementById('navHealthStatus').innerText = 'API Operational';
                 }
             } catch (err) {
-                document.getElementById('systemStatusText').innerText = 'Offline';
-                document.getElementById('systemStatusBadge').style.borderColor = 'rgba(239, 68, 68, 0.3)';
-                document.getElementById('systemStatusBadge').style.color = '#f87171';
+                document.getElementById('navHealthStatus').innerText = 'API Offline';
             }
         }
 
-        function toggleAdvanced() {
-            const fields = document.getElementById('advancedFields');
-            const arrow = document.getElementById('advancedArrow');
-            fields.classList.toggle('open');
-            arrow.innerText = fields.classList.contains('open') ? '▾' : '▸';
+        function switchTab(tabId) {
+            const isShorten = tabId === 'shorten';
+            document.getElementById('tabShortenBtn').classList.toggle('active', isShorten);
+            document.getElementById('tabAnalyticsBtn').classList.toggle('active', !isShorten);
+            document.getElementById('tabShorten').classList.toggle('active', isShorten);
+            document.getElementById('tabAnalytics').classList.toggle('active', !isShorten);
         }
 
-        async function handleShorten(e) {
+        function toggleExpiryOption() {
+            const collapse = document.getElementById('expiryCollapse');
+            const chevron = document.getElementById('expiryChevron');
+            collapse.classList.toggle('open');
+            chevron.innerText = collapse.classList.contains('open') ? '▾' : '▸';
+        }
+
+        async function createShortLink(e) {
             e.preventDefault();
-            const longUrl = document.getElementById('longUrlInput').value.trim();
-            const expiryVal = document.getElementById('expiryInput').value;
+            const longUrl = document.getElementById('targetUrlInput').value.trim();
+            const expiryVal = document.getElementById('expiryField').value;
 
             let expiresAt = null;
             if (expiryVal) {
                 expiresAt = new Date(expiryVal).toISOString();
             }
 
-            const submitBtn = document.getElementById('submitBtn');
-            submitBtn.disabled = true;
-            submitBtn.style.opacity = '0.7';
+            const btn = document.getElementById('submitShortenBtn');
+            btn.disabled = true;
+            btn.style.opacity = '0.7';
 
             try {
-                const res = await fetch(API_BASE, {
+                const res = await fetch('/api/v1/urls', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ originalUrl: longUrl, expiresAt })
@@ -777,187 +882,103 @@
                 const data = await res.json();
 
                 if (!res.ok) {
-                    const msg = (data.fieldErrors && data.fieldErrors.originalUrl) || data.message || 'Error creating link';
+                    const msg = (data.fieldErrors && data.fieldErrors.originalUrl) || data.message || 'Validation error';
                     showToast(msg, 'error');
                     return;
                 }
 
-                currentResultUrl = data.shortUrl;
-                document.getElementById('resultShortUrl').innerText = data.shortUrl;
-                document.getElementById('resultShortUrl').href = data.shortUrl;
-                document.getElementById('openLinkBtn').href = data.shortUrl;
-                document.getElementById('resultOriginalUrl').innerText = 'Destination: ' + data.originalUrl;
-                document.getElementById('resultBox').style.display = 'flex';
+                currentShortUrl = data.shortUrl;
+                document.getElementById('resultCodeBadge').innerText = 'Code: ' + data.shortCode;
+                document.getElementById('resultShortUrlLink').innerText = data.shortUrl;
+                document.getElementById('resultShortUrlLink').href = data.shortUrl;
+                document.getElementById('visitDirectBtn').href = data.shortUrl;
+                document.getElementById('resultOriginalMeta').innerText = 'Destination: ' + data.originalUrl;
+                document.getElementById('shortenResultCard').style.display = 'block';
 
-                showToast('Short URL generated successfully!', 'success');
-                document.getElementById('longUrlInput').value = '';
-                document.getElementById('expiryInput').value = '';
-                loadUrls();
+                showToast('Short link created successfully!', 'success');
+                document.getElementById('targetUrlInput').value = '';
+                document.getElementById('expiryField').value = '';
             } catch (err) {
-                showToast('Network error while creating link', 'error');
+                showToast('Failed to connect to the backend service', 'error');
             } finally {
-                submitBtn.disabled = false;
-                submitBtn.style.opacity = '1';
+                btn.disabled = false;
+                btn.style.opacity = '1';
             }
         }
 
-        function copyResultLink() {
-            if (!currentResultUrl) return;
-            navigator.clipboard.writeText(currentResultUrl);
-            const copyBtnText = document.getElementById('copyBtnText');
-            copyBtnText.innerText = 'Copied!';
-            showToast('Link copied to clipboard', 'success');
-            setTimeout(() => { copyBtnText.innerText = 'Copy'; }, 2000);
-        }
-
-        async function loadUrls() {
-            const tbody = document.getElementById('urlsTableBody');
-            try {
-                const res = await fetch(`${API_BASE}?page=0&size=50`);
-                const data = await res.json();
-                const urls = data.content || [];
-
-                if (urls.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No shortened links yet. Create one above!</td></tr>';
-                    return;
-                }
-
-                tbody.innerHTML = urls.map(u => {
-                    const dateStr = u.createdAt ? new Date(u.createdAt).toLocaleDateString() : 'N/A';
-                    return `
-                        <tr>
-                            <td>
-                                <span class="shortcode-badge">${escapeHtml(u.shortCode)}</span>
-                            </td>
-                            <td>
-                                <div class="dest-url" title="${escapeHtml(u.originalUrl)}">${escapeHtml(u.originalUrl)}</div>
-                            </td>
-                            <td>
-                                <button class="icon-btn" onclick="openAnalyticsModal('${u.shortCode}', '${escapeHtml(u.originalUrl)}')">
-                                    📊 Stats
-                                </button>
-                            </td>
-                            <td>
-                                <span class="${u.active ? 'badge-active' : 'badge-inactive'}">${u.active ? 'Active' : 'Inactive'}</span>
-                            </td>
-                            <td style="color: var(--text-muted); font-size: 0.85rem;">${dateStr}</td>
-                            <td style="text-align: right;">
-                                <div class="action-btns" style="justify-content: flex-end;">
-                                    <button class="icon-btn" title="Copy Link" onclick="copyLink('${u.shortUrl}')">📋</button>
-                                    <a href="${u.shortUrl}" target="_blank" class="icon-btn" title="Open Link">↗</a>
-                                    <button class="icon-btn" title="${u.active ? 'Deactivate' : 'Reactivate'}" onclick="toggleActive('${u.shortCode}', ${!u.active})">
-                                        ${u.active ? '⏸' : '▶'}
-                                    </button>
-                                    <button class="icon-btn btn-danger" title="Delete Link" onclick="deleteLink('${u.shortCode}')">🗑</button>
-                                </div>
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
-            } catch (err) {
-                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #f87171; padding: 2rem;">Failed to load links from API</td></tr>';
-            }
-        }
-
-        async function toggleActive(shortCode, newActive) {
-            try {
-                const res = await fetch(`${API_BASE}/${shortCode}`, {
-                    method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ active: newActive })
-                });
-                if (res.ok) {
-                    showToast(`Link ${newActive ? 'activated' : 'deactivated'}`, 'success');
-                    loadUrls();
-                } else {
-                    showToast('Failed to update link status', 'error');
-                }
-            } catch (err) {
-                showToast('Network error', 'error');
-            }
-        }
-
-        async function deleteLink(shortCode) {
-            if (!confirm(`Are you sure you want to delete short code '${shortCode}'?`)) return;
-            try {
-                const res = await fetch(`${API_BASE}/${shortCode}`, { method: 'DELETE' });
-                if (res.ok) {
-                    showToast('Link deleted successfully', 'success');
-                    loadUrls();
-                } else {
-                    showToast('Failed to delete link', 'error');
-                }
-            } catch (err) {
-                showToast('Network error', 'error');
-            }
-        }
-
-        function copyLink(url) {
-            navigator.clipboard.writeText(url);
+        function copyCurrentShortUrl() {
+            if (!currentShortUrl) return;
+            navigator.clipboard.writeText(currentShortUrl);
+            const label = document.getElementById('copyBtnLabel');
+            label.innerText = 'Copied!';
             showToast('Copied to clipboard', 'success');
+            setTimeout(() => { label.innerText = 'Copy'; }, 2000);
         }
 
-        async function openAnalyticsModal(shortCode, originalUrl) {
-            const modal = document.getElementById('analyticsModal');
-            document.getElementById('modalShortCode').innerText = 'Analytics: ' + shortCode;
-            document.getElementById('modalDestination').innerText = originalUrl;
-            document.getElementById('modalEventsBody').innerHTML = '<tr><td colspan="2" style="text-align: center; padding: 1rem;">Loading events...</td></tr>';
-            modal.classList.add('open');
+        async function inspectAnalytics(e) {
+            e.preventDefault();
+            const code = document.getElementById('shortCodeSearchInput').value.trim();
+            if (!code) return;
+
+            const btn = document.getElementById('submitSearchBtn');
+            btn.disabled = true;
+            btn.style.opacity = '0.7';
 
             try {
-                const res = await fetch(`${API_BASE}/${shortCode}/analytics?page=0&size=20`);
-                const data = await res.json();
-                document.getElementById('modalTotalClicks').innerText = data.totalClicks || 0;
-
-                const events = data.events || [];
-                if (events.length === 0) {
-                    document.getElementById('modalEventsBody').innerHTML = '<tr><td colspan="2" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No click events recorded yet. Click the short link to generate events!</td></tr>';
+                const res = await fetch(`/api/v1/urls/${encodeURIComponent(code)}/analytics?page=0&size=20`);
+                if (res.status === 404) {
+                    showToast('Short code not found', 'error');
+                    document.getElementById('analyticsDisplayPanel').style.display = 'none';
                     return;
                 }
+                const data = await res.json();
 
-                document.getElementById('modalEventsBody').innerHTML = events.map(ev => `
-                    <tr>
-                        <td>${new Date(ev.clickedAt).toLocaleString()}</td>
-                        <td style="color: var(--text-muted);">${escapeHtml(ev.referrer || 'Direct / None')}</td>
-                    </tr>
-                `).join('');
+                document.getElementById('statTotalClicks').innerText = data.totalClicks || 0;
+                document.getElementById('statCodeLabel').innerText = data.shortCode;
+                
+                const events = data.events || [];
+                const list = document.getElementById('eventsListItems');
+
+                if (events.length === 0) {
+                    list.innerHTML = '<li class="event-item" style="color: var(--text-subtle);">No click telemetry yet. Open the short link in a browser to generate events.</li>';
+                } else {
+                    list.innerHTML = events.map(ev => `
+                        <li class="event-item">
+                            <span class="event-time">${new Date(ev.clickedAt).toLocaleString()}</span>
+                            <span class="event-referrer">${escapeHtml(ev.referrer || 'Direct')}</span>
+                        </li>
+                    `).join('');
+                }
+
+                document.getElementById('analyticsDisplayPanel').style.display = 'block';
             } catch (err) {
-                document.getElementById('modalEventsBody').innerHTML = '<tr><td colspan="2" style="text-align: center; color: #f87171; padding: 1rem;">Failed to load analytics</td></tr>';
-            }
-        }
-
-        function closeAnalyticsModal() {
-            document.getElementById('analyticsModal').classList.remove('open');
-        }
-
-        function closeModalOnBackdrop(e) {
-            if (e.target.id === 'analyticsModal') {
-                closeAnalyticsModal();
+                showToast('Error retrieving analytics', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.style.opacity = '1';
             }
         }
 
         function showToast(message, type = 'success') {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = `toast toast-${type}`;
-            toast.innerText = message;
-            container.appendChild(toast);
+            const shelf = document.getElementById('toastShelf');
+            const bubble = document.createElement('div');
+            bubble.className = `toast-bubble toast-${type}`;
+            bubble.innerText = message;
+            shelf.appendChild(bubble);
+
             setTimeout(() => {
-                toast.style.opacity = '0';
-                toast.style.transform = 'translateY(10px)';
-                setTimeout(() => toast.remove(), 250);
+                bubble.style.opacity = '0';
+                bubble.style.transform = 'translateY(8px)';
+                bubble.style.transition = 'all 0.2s ease';
+                setTimeout(() => bubble.remove(), 200);
             }, 3000);
         }
 
         function escapeHtml(str) {
             if (!str) return '';
-            return str.replace(/[&<>'"]/g, tag => ({
-                '&': '&amp;',
-                '<': '&lt;',
-                '>': '&gt;',
-                "'": '&#39;',
-                '"': '&quot;'
-            }[tag] || tag));
+            return str.replace(/[&<>'"]/g, t => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+            }[t] || t));
         }
     </script>
 </body>
