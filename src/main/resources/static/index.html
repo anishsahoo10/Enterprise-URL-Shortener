@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise URL Shortener</title>
+    <style>
+        :root {
+            --bg-base: #0f172a;
+            --bg-surface: #1e293b;
+            --bg-surface-hover: #334155;
+            --bg-elevated: #1e293b;
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --primary-glow: rgba(99, 102, 241, 0.25);
+            --accent: #06b6d4;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --border-focus: #6366f1;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --radius-lg: 16px;
+            --radius-md: 10px;
+            --radius-sm: 6px;
+            --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: var(--font);
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.5;
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(99, 102, 241, 0.12) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(6, 182, 212, 0.1) 0px, transparent 50%);
+        }
+
+        header {
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(12px);
+            background: rgba(15, 23, 42, 0.75);
+            position: sticky;
+            top: 0;
+            z-index: 40;
+        }
+
+        .nav-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-main);
+            text-decoration: none;
+        }
+
+        .brand-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px var(--primary-glow);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.8rem;
+            padding: 0.35rem 0.75rem;
+            border-radius: 9999px;
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            font-weight: 500;
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            background: #10b981;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #10b981;
+        }
+
+        main {
+            flex: 1;
+            max-width: 1100px;
+            margin: 0 auto;
+            width: 100%;
+            padding: 2.5rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+        }
+
+        /* Hero & Shorten Form */
+        .hero {
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            margin-bottom: 0.75rem;
+            background: linear-gradient(to right, #f8fafc, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .shorten-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 2rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .shorten-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(to right, var(--primary), var(--accent));
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            min-width: 280px;
+            position: relative;
+        }
+
+        input[type="text"], input[type="datetime-local"] {
+            width: 100%;
+            background: var(--bg-base);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 0.9rem 1.2rem;
+            color: var(--text-main);
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        input[type="text"]:focus, input[type="datetime-local"]:focus {
+            outline: none;
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px var(--primary-glow);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+            color: #fff;
+            border: none;
+            border-radius: var(--radius-md);
+            padding: 0.9rem 1.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 14px var(--primary-glow);
+        }
+
+        .btn:hover {
+            opacity: 0.95;
+            transform: translateY(-1px);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: var(--bg-surface-hover);
+            color: var(--text-main);
+            box-shadow: none;
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: #475569;
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            box-shadow: none;
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.25);
+        }
+
+        .advanced-toggle {
+            align-self: flex-start;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0;
+            transition: color 0.2s;
+        }
+
+        .advanced-toggle:hover {
+            color: var(--text-main);
+        }
+
+        .advanced-fields {
+            display: none;
+            gap: 1rem;
+            margin-top: 0.5rem;
+            padding-top: 1rem;
+            border-top: 1px dashed var(--border);
+        }
+
+        .advanced-fields.open {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .field-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.35rem;
+            display: block;
+        }
+
+        /* Result Card */
+        .result-box {
+            display: none;
+            margin-top: 1.5rem;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: var(--radius-md);
+            padding: 1.25rem 1.5rem;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-info {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            min-width: 250px;
+        }
+
+        .result-label {
+            font-size: 0.8rem;
+            color: #38bdf8;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .result-link {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #f8fafc;
+            text-decoration: none;
+            word-break: break-all;
+        }
+
+        .result-link:hover {
+            text-decoration: underline;
+        }
+
+        .result-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* Dashboard Table */
+        .dashboard-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .dashboard-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        .table-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.95rem;
+        }
+
+        th {
+            background: rgba(15, 23, 42, 0.5);
+            padding: 1rem 1.25rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--border);
+            vertical-align: middle;
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .shortcode-badge {
+            font-family: monospace;
+            background: rgba(99, 102, 241, 0.15);
+            color: #a5b4fc;
+            padding: 0.25rem 0.5rem;
+            border-radius: var(--radius-sm);
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .dest-url {
+            max-width: 320px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--text-muted);
+        }
+
+        .badge-active {
+            display: inline-block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.2rem 0.6rem;
+            border-radius: 9999px;
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+        }
+
+        .badge-inactive {
+            display: inline-block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.2rem 0.6rem;
+            border-radius: 9999px;
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 0.4rem;
+        }
+
+        .icon-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-muted);
+            padding: 0.4rem 0.6rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .icon-btn:hover {
+            color: var(--text-main);
+            border-color: var(--text-muted);
+            background: var(--bg-surface-hover);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(4px);
+            z-index: 50;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+
+        .modal-overlay.open {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            width: 100%;
+            max-width: 650px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            line-height: 1;
+        }
+
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-card {
+            background: var(--bg-base);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .stat-val {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* Toast */
+        .toast-container {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            z-index: 100;
+        }
+
+        .toast {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0.85rem 1.25rem;
+            border-radius: var(--radius-md);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            animation: slideUp 0.2s ease;
+        }
+
+        .toast-success { border-left: 4px solid var(--success); }
+        .toast-error { border-left: 4px solid var(--danger); }
+
+        @keyframes slideUp {
+            from { transform: translateY(12px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 1.5rem;
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="nav-container">
+            <a href="/" class="brand">
+                <div class="brand-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                    </svg>
+                </div>
+                <span>LinkCraft</span>
+            </a>
+            <div class="status-badge" id="systemStatusBadge">
+                <div class="status-dot"></div>
+                <span id="systemStatusText">API Online</span>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <h1>Shorten Links. Accelerate Redirects.</h1>
+            <p>Enterprise URL Shortener with PostgreSQL durability, Redis cache-aside, and real-time click analytics.</p>
+        </section>
+
+        <!-- Shorten Input Card -->
+        <section class="shorten-card">
+            <form id="shortenForm" class="form-group" onsubmit="handleShorten(event)">
+                <div class="input-row">
+                    <div class="input-wrapper">
+                        <input type="text" id="longUrlInput" placeholder="Paste your destination link (https://...)" required autocomplete="off">
+                    </div>
+                    <button type="submit" class="btn" id="submitBtn">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="13 17 18 12 13 7"></polyline>
+                            <polyline points="6 17 11 12 6 7"></polyline>
+                        </svg>
+                        <span>Shorten Link</span>
+                    </button>
+                </div>
+
+                <button type="button" class="advanced-toggle" onclick="toggleAdvanced()">
+                    <span id="advancedArrow">▸</span>
+                    <span>Advanced Options (Expiration date)</span>
+                </button>
+
+                <div class="advanced-fields" id="advancedFields">
+                    <div style="flex: 1; min-width: 240px;">
+                        <label class="field-label" for="expiryInput">Expiration Timestamp (Optional)</label>
+                        <input type="datetime-local" id="expiryInput">
+                    </div>
+                </div>
+            </form>
+
+            <!-- Result Box -->
+            <div class="result-box" id="resultBox">
+                <div class="result-info">
+                    <span class="result-label">Your shortened link is ready</span>
+                    <a href="#" target="_blank" class="result-link" id="resultShortUrl">http://localhost:8080/example</a>
+                    <span style="font-size: 0.85rem; color: var(--text-muted);" id="resultOriginalUrl">Destination: https://...</span>
+                </div>
+                <div class="result-actions">
+                    <button class="btn btn-secondary" onclick="copyResultLink()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                        </svg>
+                        <span id="copyBtnText">Copy</span>
+                    </button>
+                    <a href="#" target="_blank" class="btn" id="openLinkBtn">Visit Link</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Managed Links Table -->
+        <section>
+            <div class="dashboard-header">
+                <h2 class="dashboard-title">Active Links</h2>
+                <button class="btn btn-secondary" onclick="loadUrls()" style="padding: 0.5rem 1rem; font-size: 0.85rem;">
+                    ↻ Refresh
+                </button>
+            </div>
+
+            <div class="table-card">
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Short Code</th>
+                                <th>Original Destination</th>
+                                <th>Clicks</th>
+                                <th>Status</th>
+                                <th>Created</th>
+                                <th style="text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="urlsTableBody">
+                            <tr>
+                                <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">Loading links...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Analytics Modal -->
+    <div class="modal-overlay" id="analyticsModal" onclick="closeModalOnBackdrop(event)">
+        <div class="modal">
+            <div class="modal-header">
+                <div>
+                    <h3 style="font-size: 1.25rem; font-weight: 700;" id="modalShortCode">Analytics</h3>
+                    <p style="font-size: 0.85rem; color: var(--text-muted);" id="modalDestination">https://...</p>
+                </div>
+                <button class="modal-close" onclick="closeAnalyticsModal()">&times;</button>
+            </div>
+
+            <div class="analytics-grid">
+                <div class="stat-card">
+                    <div class="stat-val" id="modalTotalClicks">0</div>
+                    <div class="stat-label">Total Clicks</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-val" style="font-size: 1.2rem; color: #38bdf8;" id="modalStatus">Active</div>
+                    <div class="stat-label">Link Status</div>
+                </div>
+            </div>
+
+            <h4 style="font-size: 1rem; margin-bottom: 0.75rem; color: var(--text-main);">Recent Click Events</h4>
+            <div class="table-card" style="border-radius: var(--radius-md);">
+                <table style="font-size: 0.85rem;">
+                    <thead>
+                        <tr>
+                            <th>Clicked At (UTC)</th>
+                            <th>Referrer</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modalEventsBody">
+                        <tr>
+                            <td colspan="2" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No click events recorded yet.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <footer>
+        Enterprise URL Shortener &bull; Built with Java 21 &bull; Spring Boot 3.3 &bull; PostgreSQL &bull; Redis Cache-Aside
+    </footer>
+
+    <script>
+        const API_BASE = '/api/v1/urls';
+        let currentResultUrl = '';
+
+        document.addEventListener('DOMContentLoaded', () => {
+            checkHealth();
+            loadUrls();
+        });
+
+        async function checkHealth() {
+            try {
+                const res = await fetch('/actuator/health');
+                const data = await res.json();
+                if (data.status === 'UP') {
+                    document.getElementById('systemStatusText').innerText = 'API Online';
+                }
+            } catch (err) {
+                document.getElementById('systemStatusText').innerText = 'Offline';
+                document.getElementById('systemStatusBadge').style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                document.getElementById('systemStatusBadge').style.color = '#f87171';
+            }
+        }
+
+        function toggleAdvanced() {
+            const fields = document.getElementById('advancedFields');
+            const arrow = document.getElementById('advancedArrow');
+            fields.classList.toggle('open');
+            arrow.innerText = fields.classList.contains('open') ? '▾' : '▸';
+        }
+
+        async function handleShorten(e) {
+            e.preventDefault();
+            const longUrl = document.getElementById('longUrlInput').value.trim();
+            const expiryVal = document.getElementById('expiryInput').value;
+
+            let expiresAt = null;
+            if (expiryVal) {
+                expiresAt = new Date(expiryVal).toISOString();
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.style.opacity = '0.7';
+
+            try {
+                const res = await fetch(API_BASE, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ originalUrl: longUrl, expiresAt })
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    const msg = (data.fieldErrors && data.fieldErrors.originalUrl) || data.message || 'Error creating link';
+                    showToast(msg, 'error');
+                    return;
+                }
+
+                currentResultUrl = data.shortUrl;
+                document.getElementById('resultShortUrl').innerText = data.shortUrl;
+                document.getElementById('resultShortUrl').href = data.shortUrl;
+                document.getElementById('openLinkBtn').href = data.shortUrl;
+                document.getElementById('resultOriginalUrl').innerText = 'Destination: ' + data.originalUrl;
+                document.getElementById('resultBox').style.display = 'flex';
+
+                showToast('Short URL generated successfully!', 'success');
+                document.getElementById('longUrlInput').value = '';
+                document.getElementById('expiryInput').value = '';
+                loadUrls();
+            } catch (err) {
+                showToast('Network error while creating link', 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.style.opacity = '1';
+            }
+        }
+
+        function copyResultLink() {
+            if (!currentResultUrl) return;
+            navigator.clipboard.writeText(currentResultUrl);
+            const copyBtnText = document.getElementById('copyBtnText');
+            copyBtnText.innerText = 'Copied!';
+            showToast('Link copied to clipboard', 'success');
+            setTimeout(() => { copyBtnText.innerText = 'Copy'; }, 2000);
+        }
+
+        async function loadUrls() {
+            const tbody = document.getElementById('urlsTableBody');
+            try {
+                const res = await fetch(`${API_BASE}?page=0&size=50`);
+                const data = await res.json();
+                const urls = data.content || [];
+
+                if (urls.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No shortened links yet. Create one above!</td></tr>';
+                    return;
+                }
+
+                tbody.innerHTML = urls.map(u => {
+                    const dateStr = u.createdAt ? new Date(u.createdAt).toLocaleDateString() : 'N/A';
+                    return `
+                        <tr>
+                            <td>
+                                <span class="shortcode-badge">${escapeHtml(u.shortCode)}</span>
+                            </td>
+                            <td>
+                                <div class="dest-url" title="${escapeHtml(u.originalUrl)}">${escapeHtml(u.originalUrl)}</div>
+                            </td>
+                            <td>
+                                <button class="icon-btn" onclick="openAnalyticsModal('${u.shortCode}', '${escapeHtml(u.originalUrl)}')">
+                                    📊 Stats
+                                </button>
+                            </td>
+                            <td>
+                                <span class="${u.active ? 'badge-active' : 'badge-inactive'}">${u.active ? 'Active' : 'Inactive'}</span>
+                            </td>
+                            <td style="color: var(--text-muted); font-size: 0.85rem;">${dateStr}</td>
+                            <td style="text-align: right;">
+                                <div class="action-btns" style="justify-content: flex-end;">
+                                    <button class="icon-btn" title="Copy Link" onclick="copyLink('${u.shortUrl}')">📋</button>
+                                    <a href="${u.shortUrl}" target="_blank" class="icon-btn" title="Open Link">↗</a>
+                                    <button class="icon-btn" title="${u.active ? 'Deactivate' : 'Reactivate'}" onclick="toggleActive('${u.shortCode}', ${!u.active})">
+                                        ${u.active ? '⏸' : '▶'}
+                                    </button>
+                                    <button class="icon-btn btn-danger" title="Delete Link" onclick="deleteLink('${u.shortCode}')">🗑</button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (err) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #f87171; padding: 2rem;">Failed to load links from API</td></tr>';
+            }
+        }
+
+        async function toggleActive(shortCode, newActive) {
+            try {
+                const res = await fetch(`${API_BASE}/${shortCode}`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ active: newActive })
+                });
+                if (res.ok) {
+                    showToast(`Link ${newActive ? 'activated' : 'deactivated'}`, 'success');
+                    loadUrls();
+                } else {
+                    showToast('Failed to update link status', 'error');
+                }
+            } catch (err) {
+                showToast('Network error', 'error');
+            }
+        }
+
+        async function deleteLink(shortCode) {
+            if (!confirm(`Are you sure you want to delete short code '${shortCode}'?`)) return;
+            try {
+                const res = await fetch(`${API_BASE}/${shortCode}`, { method: 'DELETE' });
+                if (res.ok) {
+                    showToast('Link deleted successfully', 'success');
+                    loadUrls();
+                } else {
+                    showToast('Failed to delete link', 'error');
+                }
+            } catch (err) {
+                showToast('Network error', 'error');
+            }
+        }
+
+        function copyLink(url) {
+            navigator.clipboard.writeText(url);
+            showToast('Copied to clipboard', 'success');
+        }
+
+        async function openAnalyticsModal(shortCode, originalUrl) {
+            const modal = document.getElementById('analyticsModal');
+            document.getElementById('modalShortCode').innerText = 'Analytics: ' + shortCode;
+            document.getElementById('modalDestination').innerText = originalUrl;
+            document.getElementById('modalEventsBody').innerHTML = '<tr><td colspan="2" style="text-align: center; padding: 1rem;">Loading events...</td></tr>';
+            modal.classList.add('open');
+
+            try {
+                const res = await fetch(`${API_BASE}/${shortCode}/analytics?page=0&size=20`);
+                const data = await res.json();
+                document.getElementById('modalTotalClicks').innerText = data.totalClicks || 0;
+
+                const events = data.events || [];
+                if (events.length === 0) {
+                    document.getElementById('modalEventsBody').innerHTML = '<tr><td colspan="2" style="text-align: center; color: var(--text-muted); padding: 1.5rem;">No click events recorded yet. Click the short link to generate events!</td></tr>';
+                    return;
+                }
+
+                document.getElementById('modalEventsBody').innerHTML = events.map(ev => `
+                    <tr>
+                        <td>${new Date(ev.clickedAt).toLocaleString()}</td>
+                        <td style="color: var(--text-muted);">${escapeHtml(ev.referrer || 'Direct / None')}</td>
+                    </tr>
+                `).join('');
+            } catch (err) {
+                document.getElementById('modalEventsBody').innerHTML = '<tr><td colspan="2" style="text-align: center; color: #f87171; padding: 1rem;">Failed to load analytics</td></tr>';
+            }
+        }
+
+        function closeAnalyticsModal() {
+            document.getElementById('analyticsModal').classList.remove('open');
+        }
+
+        function closeModalOnBackdrop(e) {
+            if (e.target.id === 'analyticsModal') {
+                closeAnalyticsModal();
+            }
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            toast.innerText = message;
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(10px)';
+                setTimeout(() => toast.remove(), 250);
+            }, 3000);
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/[&<>'"]/g, tag => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                "'": '&#39;',
+                '"': '&quot;'
+            }[tag] || tag));
+        }
+    </script>
+</body>
+</html>
